@@ -1,39 +1,36 @@
-I have a incomplete rtl module called frame_to_ip_pkt_bridge with port list given below:
+I have a incomplete rtl module called packet_processing_core with port list given below:
 
-```module frame_to_ip_packet_bridge (
+```module packet_processing_core (
   input wire clk,
   input wire rst_n,
-  
-  // MAC interface
-  output reg [47:0] mac_tx_data,
-  output reg mac_tx_valid,
-  input wire mac_tx_ready,
-  input wire [47:0] mac_rx_data,
-  input wire mac_rx_valid,
-  output reg mac_rx_ready,
-  
-  // TCP/IP stack interface
-  input wire [31:0] ip_tx_data,
-  input wire ip_tx_valid,
-  output reg ip_tx_ready,
-  output reg [31:0] ip_rx_data,
-  output reg ip_rx_valid,
-  input wire ip_rx_ready
+  // AXI stream interface for input
+  input wire [31:0] s_axis_tdata,
+  input wire s_axis_tvalid,
+  output reg s_axis_tready,
+  // AXI stream interface for output
+  output reg [31:0] m_axis_tdata,
+  output reg m_axis_tvalid,
+  input wire m_axis_tready,
+  // Control and status signals
+  input wire [31:0] control_reg,
+  output reg status_reg
 );```
 
-This Module has 48 bit data input/output interface from ethernet layer side from where it transmit/receives ethernet frame 
-and has 32 bit input/output data interface from ip layer side from where it transmit/recieves IP layer packets. 
+Operation of the core
 
-Apart from 48 bit and 32 bit data interface, it also expects handshakes signals valid and ready signal from both ethernet layer side and ip layer side
-while transmitting and receiving data from both layers.
+This module recieve an input packet from slave using axi stream interface[32 bit] of maximum length 255. 
+The output packet is also sent using axi stream interface[32 bit] from core to master.
+Packet end can be found by matching 8 msb bits to 8'hFF.
+Processing core also receive input signal of control reg to control internal operation on incoming packet bytes as below operation:
 
-Please consider taking some constant parameters defined below to generate header for ethernet frame from ip packet.
-  // Ethernet frame parameters
-  parameter PREAMBLE = 64'h55555555555555D5;
-  parameter SFD = 8'hD5;
-  parameter ETH_TYPE_IPV4 = 16'h0800;
-  parameter MAC_ADDR_LOCAL = 48'h000A35000001;
-  parameter MAC_ADDR_REMOTE = 48'h000A35000002;
+two internal registers[32 bit] are present and updated based on control reg such that 
+internal reg 1 = packet_buffer [0] + control_reg
+internal reg 2 = packet_buffer [1] * control_reg
+output packet bytes are updated based on these internal reg 
+packet_buffer [0] = internal reg 1
+packet_buffer [1] = internal reg 2
 
-Complete the implementation of frame_to_ip_packet_bridge module such that when it receives ethernet packet( 48 bit interface) from ethernet layer side, it
-is able to parse and stripe ethernet header to just give ip packet( 32 bit interface) to ip layer and vice-versa. 
+processing core outputs status_reg signaling status of operation , status is 0 when core is sitting idle and no
+valid bytes are there in pipeline of core other wise valid bytes in pipeline gives status 1.
+
+Complete the implementation of packet_processing_core implementing the logic given above.
