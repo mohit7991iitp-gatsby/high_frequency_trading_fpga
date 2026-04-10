@@ -107,7 +107,7 @@ def test_packet_core_hidden_runner():
 
    proj_path = Path(__file__).resolve().parent.parent
 
-   sources = [proj_path / "golden/packet_processing_core.v"]
+   sources = [proj_path / "sources/packet_processing_core.v"]
    runner = get_runner(sim)
    runner.build(
        sources=sources,
