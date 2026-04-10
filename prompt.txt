@@ -1,0 +1,39 @@
+I have a incomplete rtl module called frame_to_ip_pkt_bridge with port list given below:
+
+```module frame_to_ip_packet_bridge (
+  input wire clk,
+  input wire rst_n,
+  
+  // MAC interface
+  output reg [47:0] mac_tx_data,
+  output reg mac_tx_valid,
+  input wire mac_tx_ready,
+  input wire [47:0] mac_rx_data,
+  input wire mac_rx_valid,
+  output reg mac_rx_ready,
+  
+  // TCP/IP stack interface
+  input wire [31:0] ip_tx_data,
+  input wire ip_tx_valid,
+  output reg ip_tx_ready,
+  output reg [31:0] ip_rx_data,
+  output reg ip_rx_valid,
+  input wire ip_rx_ready
+);```
+
+This Module has 48 bit data input/output interface from ethernet layer side from where it transmit/receives ethernet frame 
+and has 32 bit input/output data interface from ip layer side from where it transmit/recieves IP layer packets. 
+
+Apart from 48 bit and 32 bit data interface, it also expects handshakes signals valid and ready signal from both ethernet layer side and ip layer side
+while transmitting and receiving data from both layers.
+
+Please consider taking some constant parameters defined below to generate header for ethernet frame from ip packet.
+  // Ethernet frame parameters
+  parameter PREAMBLE = 64'h55555555555555D5;
+  parameter SFD = 8'hD5;
+  parameter ETH_TYPE_IPV4 = 16'h0800;
+  parameter MAC_ADDR_LOCAL = 48'h000A35000001;
+  parameter MAC_ADDR_REMOTE = 48'h000A35000002;
+
+Complete the implementation of frame_to_ip_packet_bridge module such that when it receives ethernet packet( 48 bit interface) from ethernet layer side, it
+is able to parse and stripe ethernet header to just give ip packet( 32 bit interface) to ip layer and vice-versa. 
